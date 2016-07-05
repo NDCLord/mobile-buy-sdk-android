@@ -94,7 +94,6 @@ final class CustomerServiceDefault implements CustomerService {
             .createCustomer(accountCredentialsWrapper)
             .doOnNext(new RetrofitSuccessHttpStatusCodeHandler<>())
             .compose(new UnwrapRetrofitBodyTransformer<CustomerWrapper, Customer>())
-            .doOnNext(cacheRxHookProvider.getCustomerCacheHook())
             .onErrorResumeNext(new BuyClientExceptionHandler<Customer>())
             .flatMap(new Func1<Customer, Observable<Customer>>() {
                 @Override

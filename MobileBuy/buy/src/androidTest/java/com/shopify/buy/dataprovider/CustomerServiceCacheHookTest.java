@@ -74,7 +74,11 @@ public class CustomerServiceCacheHookTest extends ShopifyAndroidTestCase {
 
         customerWrapper = new CustomerWrapper(customer);
 
-        customerToken = new CustomerToken();
+        customerToken = new CustomerToken() {
+            {
+                customerId = 100L;
+            }
+        };
 
         customerTokenWrapper = new CustomerTokenWrapper(customerToken);
 
@@ -169,6 +173,7 @@ public class CustomerServiceCacheHookTest extends ShopifyAndroidTestCase {
         final Observable<Response<CustomerWrapper>> responseObservable = Observable.just(response);
         Mockito.when(customerRetrofitService.createCustomer(Mockito.any(AccountCredentialsWrapper.class))).thenReturn(responseObservable);
         Mockito.when(customerRetrofitService.getCustomerToken(Mockito.any(AccountCredentialsWrapper.class))).thenReturn(responseCustomerTokenObservable);
+        Mockito.when(customerRetrofitService.getCustomer(Mockito.any(Long.class))).thenReturn(responseObservable);
         buyClient.createCustomer(new AccountCredentials("test@test.com", "123"), new Callback<Customer>() {
             @Override
             public void success(Customer response) {
@@ -223,13 +228,16 @@ public class CustomerServiceCacheHookTest extends ShopifyAndroidTestCase {
 
     @Test
     public void cacheLoginCustomer() {
+        final Response<CustomerWrapper> customerResponse = Response.success(customerWrapper);
+        final Observable<Response<CustomerWrapper>> customerResponseObservable = Observable.just(customerResponse);
         final Response<CustomerTokenWrapper> response = Response.success(customerTokenWrapper);
         final Observable<Response<CustomerTokenWrapper>> responseObservable = Observable.just(response);
         Mockito.when(customerRetrofitService.getCustomerToken(Mockito.any(AccountCredentialsWrapper.class))).thenReturn(responseObservable);
+        Mockito.when(customerRetrofitService.getCustomer(Mockito.any(Long.class))).thenReturn(customerResponseObservable);
         buyClient.loginCustomer(new AccountCredentials("test@test.com", "123"), new Callback<Customer>() {
             @Override
             public void success(Customer response) {
-                Assert.assertEquals(customerToken, response);
+                Assert.assertEquals(customer, response);
             }
 
             @Override
